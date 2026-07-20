@@ -1,0 +1,11 @@
+services:
+  dagster:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - ./data:/app/data
+    environment:
+      - DAGSTER_HOME=/app/.dagster
+      - DUCKDB_PATH=/app/data/challenge.duckdb

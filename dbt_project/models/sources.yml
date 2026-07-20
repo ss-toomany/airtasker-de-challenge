@@ -1,0 +1,25 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    tables:
+      - name: raw_tasks
+        description: >
+          Raw task data. Pre-loaded on container startup.
+          Contains known data quality issues — see README.
+        columns:
+          - name: task_id
+            description: Task identifier. Not guaranteed to be unique in this table.
+          - name: title
+          - name: category
+          - name: location_id
+            description: FK to locations_raw. Some values may not exist in that table.
+          - name: posted_at
+            description: UTC timestamp of when the task was posted.
+          - name: state
+          - name: budget
+          - name: assigned_at
+            description: UTC timestamp of when the task was assigned. NULL for unassigned tasks.
+          - name: scheduled_at
+            description: UTC timestamp of when the work is scheduled to occur. Present on assigned tasks only.

@@ -1,0 +1,22 @@
+name: airtasker_challenge
+version: '1.0.0'
+config-version: 2
+
+profile: airtasker_challenge
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+
+seeds:
+  airtasker_challenge:
+    +schema: raw
+
+models:
+  airtasker_challenge:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: view
+    mart:
+      +materialized: table

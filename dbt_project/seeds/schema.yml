@@ -1,0 +1,12 @@
+version: 2
+
+seeds:
+  - name: raw_locations
+    config:
+      column_types:
+        location_id: varchar
+        city: varchar
+        country: varchar
+        lat: double
+        lng: double
+        timezone: varchar

@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "airtasker-de-challenge"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "dagster",
+    "dagster-webserver",
+    "dagster-dbt",
+    "dagster-duckdb",
+    "dbt-duckdb",
+    "duckdb",
+    "requests",
+    "pandas",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-mock",
+]
+
+[tool.dagster]
+module_name = "weather_risk.definitions"
+
+[tool.pytest.ini_options]
+testpaths = ["weather_risk_tests"]

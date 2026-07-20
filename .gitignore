@@ -1,0 +1,14 @@
+*.duckdb
+*.duckdb.wal
+data/
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+dbt_project/target/
+dbt_project/dbt_packages/
+dbt_project/logs/
+.dagster/
+.env
+dbt_project/.user.yml
+.DS_Store

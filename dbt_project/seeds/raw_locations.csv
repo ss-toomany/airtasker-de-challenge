@@ -1,0 +1,21 @@
+location_id,city,country,lat,lng,timezone
+LOC_AU_SYD,Sydney,AU,-33.8688,151.2093,Australia/Sydney
+LOC_AU_MEL,Melbourne,AU,-37.8136,144.9631,Australia/Melbourne
+LOC_AU_BNE,Brisbane,AU,-27.4698,153.0251,Australia/Brisbane
+LOC_AU_PER,Perth,AU,-31.9505,115.8605,Australia/Perth
+LOC_AU_ADL,Adelaide,AU,-34.9285,138.6007,Australia/Adelaide
+LOC_AU_CBR,Canberra,AU,-35.2809,149.1300,Australia/Sydney
+LOC_AU_DAR,Darwin,AU,-12.4634,130.8456,Australia/Darwin
+LOC_US_NYC,New York,US,40.7128,-74.0060,America/New_York
+LOC_US_LAX,Los Angeles,US,34.0522,-118.2437,America/Los_Angeles
+LOC_US_CHI,Chicago,US,41.8781,-87.6298,America/Chicago
+LOC_US_HOU,Houston,US,29.7604,-95.3698,America/Chicago
+LOC_US_PHX,Phoenix,US,33.4484,-112.0740,America/Phoenix
+LOC_US_SEA,Seattle,US,47.6062,-122.3321,America/Los_Angeles
+LOC_US_DEN,Denver,US,39.7392,-104.9903,America/Denver
+LOC_UK_LON,London,GB,51.5074,-0.1278,Europe/London
+LOC_UK_MCR,Manchester,GB,53.4808,-2.2426,Europe/London
+LOC_UK_BIR,Birmingham,GB,52.4862,-1.8904,Europe/London
+LOC_UK_LEE,Leeds,GB,53.8008,-1.5491,Europe/London
+LOC_UK_GLA,Glasgow,GB,55.8642,-4.2518,Europe/London
+LOC_UK_EDI,Edinburgh,GB,55.9533,-3.1883,Europe/London

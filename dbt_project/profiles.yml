@@ -1,0 +1,7 @@
+airtasker_challenge:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('DUCKDB_PATH', '/app/data/challenge.duckdb') }}"
+      threads: 4
