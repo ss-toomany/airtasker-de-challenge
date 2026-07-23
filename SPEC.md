@@ -88,6 +88,17 @@ Data Quality), `weather_risk_score` is `null` and `weather_risk_label` is
   from `locations_raw`. Handled with a left join from tasks to locations in
   the mart, so these rows survive with `weather_risk_label = 'unknown'`
   instead of being silently dropped — keeps them visible/auditable.
+- **Null rows in `raw_weather_forecast`** — Open-Meteo's `past_days=92` is
+  the parameter's max, but the actual historical archive for the
+  auto-selected model only reliably covers ~77 of those days; the oldest
+  ~15 days come back `null` across all four variables rather than erroring.
+  Confirmed directly against the live API (not a bug in the ingestion
+  asset). This doesn't affect any task's risk score in practice — the
+  oldest a `completed` task's `scheduled_at` can be (per how `posted_at`,
+  `assigned_at`, and `scheduled_at` are generated) is well inside the valid
+  ~77-day range, short of the null zone. Handled by the same null-hour
+  logic used for orphaned locations: no matched (non-null) weather row →
+  `weather_risk_label = 'unknown'`.
 
 ---
 
