@@ -23,3 +23,23 @@ sources:
             description: UTC timestamp of when the task was assigned. NULL for unassigned tasks.
           - name: scheduled_at
             description: UTC timestamp of when the work is scheduled to occur. Present on assigned tasks only.
+
+      - name: raw_weather_forecast
+        description: >
+          Hourly weather data per location from Open-Meteo, written by the
+          raw_weather_forecast Dagster asset. Covers past_days=92 through
+          forecast_days=16 relative to the run date, so it includes both
+          observed (past) and forecast (future) hours.
+        columns:
+          - name: location_id
+            description: FK to locations_raw.
+          - name: time
+            description: UTC timestamp for this hourly reading.
+          - name: temperature_2m
+            description: Air temperature at 2m, degrees Celsius.
+          - name: precipitation
+            description: Precipitation for the hour, mm.
+          - name: windspeed_10m
+            description: Wind speed at 10m, km/h.
+          - name: visibility
+            description: Visibility, meters (converted to km in stg_weather_forecast).
