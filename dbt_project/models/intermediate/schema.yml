@@ -1,6 +1,66 @@
 version: 2
 
-models: []
+models:
+  - name: int_tasks_locations_weather_forecast
+    description: >
+      Joins each task to the weather hour(s) relevant to it, per the
+      scheduled_at -> assigned_at -> posted_at priority in SPEC.md. One row
+      per (task, matched hour) — a single row for scheduled/assigned tasks,
+      up to 72 rows for the posted-only fallback. Tasks with an orphaned
+      location or no matching hour in the fetched weather window still
+      produce one row, with null scores. Not yet aggregated to one row per
+      task — see fact_tasks_weather_risk for that.
+    columns:
+      - name: task_id
+        description: FK to stg_tasks.
+      - name: location_id
+        description: FK to stg_locations. Null-valued weather columns if this doesn't resolve.
+      - name: match_source
+        description: Which task timestamp determined the window — 'scheduled', 'assigned', or 'posted'.
+      - name: weather_time
+        description: UTC hour of the matched weather row. Null if no hour in the task's window had data.
+      - name: temp_score
+        description: Temperature factor score, 1-3. Null if no weather matched.
+      - name: precip_score
+        description: Precipitation factor score, 1-3. Null if no weather matched.
+      - name: wind_score
+        description: Wind speed factor score, 1-3. Null if no weather matched.
+      - name: visibility_score
+        description: Visibility factor score, 1-3. Null if no weather matched.
+      - name: label_rank
+        description: Worst of the 4 factor scores for this hour (1=LOW, 2=MEDIUM, 3=HIGH). Null if no weather matched.
+      - name: hourly_score
+        description: Sum of the 4 factor scores for this hour, 4-12. Null if no weather matched.
 
 unit_tests:
-  []
+  - name: test_weather_factor_scoring_thresholds
+    description: >
+      Checks the per-factor threshold rules against one HIGH, one MEDIUM,
+      and one LOW case (per SPEC.md's scoring table), plus a task whose
+      location doesn't resolve — confirming null scores rather than a
+      silently wrong default.
+    model: int_tasks_locations_weather_forecast
+    given:
+      - input: ref('stg_tasks')
+        rows:
+          - {task_id: T_HIGH, location_id: LOC_1, posted_at: "2026-01-01 00:00:00", assigned_at: null, scheduled_at: "2026-01-01 10:00:00"}
+          - {task_id: T_MED, location_id: LOC_1, posted_at: "2026-01-01 00:00:00", assigned_at: null, scheduled_at: "2026-01-01 11:00:00"}
+          - {task_id: T_LOW, location_id: LOC_1, posted_at: "2026-01-01 00:00:00", assigned_at: null, scheduled_at: "2026-01-01 12:00:00"}
+          - {task_id: T_ORPHAN, location_id: LOC_MISSING, posted_at: "2026-01-01 00:00:00", assigned_at: null, scheduled_at: null}
+      - input: ref('stg_locations')
+        rows:
+          - {location_id: LOC_1, city: Testville, country: AU, timezone: "Australia/Sydney"}
+      - input: ref('stg_weather_forecast')
+        rows:
+          # HIGH: every factor past its threshold
+          - {location_id: LOC_1, time: "2026-01-01 10:00:00", temperature_2m: 5, precipitation: 15, windspeed_10m: 35, visibility_km: 0.5}
+          # MEDIUM: every factor in its middle band
+          - {location_id: LOC_1, time: "2026-01-01 11:00:00", temperature_2m: 11, precipitation: 5, windspeed_10m: 15, visibility_km: 5}
+          # LOW: every factor comfortably inside range
+          - {location_id: LOC_1, time: "2026-01-01 12:00:00", temperature_2m: 17, precipitation: 1, windspeed_10m: 5, visibility_km: 15}
+    expect:
+      rows:
+        - {task_id: T_HIGH, temp_score: 3, precip_score: 3, wind_score: 3, visibility_score: 3, label_rank: 3, hourly_score: 12}
+        - {task_id: T_MED, temp_score: 2, precip_score: 2, wind_score: 2, visibility_score: 2, label_rank: 2, hourly_score: 8}
+        - {task_id: T_LOW, temp_score: 1, precip_score: 1, wind_score: 1, visibility_score: 1, label_rank: 1, hourly_score: 4}
+        - {task_id: T_ORPHAN, temp_score: null, precip_score: null, wind_score: null, visibility_score: null, label_rank: null, hourly_score: null}

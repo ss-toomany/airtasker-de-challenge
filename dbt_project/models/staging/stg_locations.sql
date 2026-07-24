@@ -2,4 +2,11 @@ with source as (
     select * from {{ ref('raw_locations') }}
 )
 
-select * from source
+select
+    location_id,
+    city,
+    country,
+    lat,
+    lng,
+    timezone
+from source

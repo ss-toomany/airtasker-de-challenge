@@ -8,6 +8,9 @@ models:
     columns:
       - name: task_id
         description: Unique task identifier.
+        data_tests:
+          - unique
+          - not_null
       - name: title
       - name: category
       - name: location_id
@@ -15,6 +18,9 @@ models:
       - name: posted_at
         description: UTC timestamp of when the task was posted.
       - name: state
+        data_tests:
+          - accepted_values:
+              values: ['open', 'assigned', 'completed', 'cancelled']
       - name: budget
       - name: assigned_at
         description: UTC timestamp of when the task was assigned. NULL for unassigned tasks.
@@ -27,13 +33,37 @@ models:
     columns:
       - name: location_id
         description: Unique location identifier.
+        data_tests:
+          - unique
+          - not_null
       - name: city
       - name: country
         description: Country code — AU, US, or GB.
+        data_tests:
+          - accepted_values:
+              values: ['AU', 'US', 'GB']
       - name: lat
       - name: lng
       - name: timezone
         description: IANA timezone string.
+
+  - name: stg_weather_forecast
+    description: >
+      Staging model for hourly weather data (raw_weather_forecast source).
+      Converts visibility from meters to km; otherwise a pass-through.
+    columns:
+      - name: location_id
+        description: FK to stg_locations.
+      - name: time
+        description: UTC timestamp for this hourly reading.
+      - name: temperature_2m
+        description: Air temperature at 2m, degrees Celsius.
+      - name: precipitation
+        description: Precipitation for the hour, mm.
+      - name: windspeed_10m
+        description: Wind speed at 10m, km/h.
+      - name: visibility_km
+        description: Visibility, km (converted from the source's meters).
 
 unit_tests:
   []

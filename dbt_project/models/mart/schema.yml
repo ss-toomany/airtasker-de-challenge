@@ -1,6 +1,34 @@
 version: 2
 
-models: []
+models:
+  - name: fact_tasks_weather_risk
+    description: >
+      One row per task, with a weather risk score/label derived from
+      int_tasks_locations_weather_forecast per SPEC.md's risk model. Tasks
+      with an orphaned location, or whose relevant hour(s) fall outside the
+      fetched weather window, get weather_risk_label = 'unknown' and a null
+      weather_risk_score rather than being dropped.
+    columns:
+      - name: task_id
+        description: Unique task identifier (deduplicated in stg_tasks).
+      - name: title
+      - name: category
+      - name: location_id
+        description: FK to stg_locations. May be an orphaned reference — see weather_risk_label.
+      - name: state
+      - name: budget
+      - name: posted_at
+      - name: assigned_at
+      - name: scheduled_at
+      - name: weather_risk_score
+        description: >
+          Average of the matched hour(s)' combined factor score (4-12,
+          higher = riskier). Null if no weather data matched.
+      - name: weather_risk_label
+        description: >
+          HIGH/MEDIUM/LOW based on the worst-factor rule (mode across
+          matched hours for the posted-fallback case), or 'unknown' if no
+          weather data matched.
 
 unit_tests:
   []

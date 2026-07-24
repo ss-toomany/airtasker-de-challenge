@@ -12,3 +12,4 @@ dbt_project/logs/
 .env
 dbt_project/.user.yml
 .DS_Store
+NEXT_STEPS.md
