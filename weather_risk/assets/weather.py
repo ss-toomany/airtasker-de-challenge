@@ -35,21 +35,29 @@ def raw_weather_forecast(
         ).fetchall()
 
     rows = []
+    failed_locations = []
     for location_id, lat, lng in locations:
-        response = requests.get(
-            OPEN_METEO_URL,
-            params={
-                "latitude": lat,
-                "longitude": lng,
-                "hourly": ",".join(HOURLY_VARIABLES),
-                "forecast_days": FORECAST_DAYS,
-                "past_days": PAST_DAYS,
-                "timezone": "UTC",
-            },
-            timeout=30,
-        )
-        response.raise_for_status()
-        hourly = response.json()["hourly"]
+        try:
+            response = requests.get(
+                OPEN_METEO_URL,
+                params={
+                    "latitude": lat,
+                    "longitude": lng,
+                    "hourly": ",".join(HOURLY_VARIABLES),
+                    "forecast_days": FORECAST_DAYS,
+                    "past_days": PAST_DAYS,
+                    "timezone": "UTC",
+                },
+                timeout=30,
+            )
+            response.raise_for_status()
+            hourly = response.json()["hourly"]
+        except (requests.exceptions.RequestException, KeyError, ValueError) as e:
+            # One bad location (timeout, HTTP error, malformed response) shouldn't
+            # take down the whole run and discard every other location's data.
+            context.log.warning(f"Failed to fetch weather for {location_id}: {e}")
+            failed_locations.append(location_id)
+            continue
 
         for i, time in enumerate(hourly["time"]):
             rows.append(
@@ -64,6 +72,12 @@ def raw_weather_forecast(
             )
         context.log.info(f"Fetched {len(hourly['time'])} hourly rows for {location_id}")
 
+    if not rows:
+        raise RuntimeError(
+            f"Failed to fetch weather for all {len(locations)} locations; aborting "
+            f"rather than writing an empty table. Failed: {failed_locations}"
+        )
+
     weather_df = pd.DataFrame(rows)
     weather_df["time"] = pd.to_datetime(weather_df["time"])
 
@@ -75,7 +89,9 @@ def raw_weather_forecast(
 
     return MaterializeResult(
         metadata={
-            "num_locations": len(locations),
+            "num_locations_succeeded": len(locations) - len(failed_locations),
+            "num_locations_failed": len(failed_locations),
+            "failed_locations": failed_locations,
             "num_rows": len(weather_df),
         }
     )

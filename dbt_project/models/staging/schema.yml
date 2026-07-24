@@ -8,6 +8,9 @@ models:
     columns:
       - name: task_id
         description: Unique task identifier.
+        data_tests:
+          - unique
+          - not_null
       - name: title
       - name: category
       - name: location_id
@@ -15,6 +18,9 @@ models:
       - name: posted_at
         description: UTC timestamp of when the task was posted.
       - name: state
+        data_tests:
+          - accepted_values:
+              values: ['open', 'assigned', 'completed', 'cancelled']
       - name: budget
       - name: assigned_at
         description: UTC timestamp of when the task was assigned. NULL for unassigned tasks.
@@ -27,9 +33,15 @@ models:
     columns:
       - name: location_id
         description: Unique location identifier.
+        data_tests:
+          - unique
+          - not_null
       - name: city
       - name: country
         description: Country code — AU, US, or GB.
+        data_tests:
+          - accepted_values:
+              values: ['AU', 'US', 'GB']
       - name: lat
       - name: lng
       - name: timezone

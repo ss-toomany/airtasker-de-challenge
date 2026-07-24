@@ -33,4 +33,34 @@ models:
         description: Sum of the 4 factor scores for this hour, 4-12. Null if no weather matched.
 
 unit_tests:
-  []
+  - name: test_weather_factor_scoring_thresholds
+    description: >
+      Checks the per-factor threshold rules against one HIGH, one MEDIUM,
+      and one LOW case (per SPEC.md's scoring table), plus a task whose
+      location doesn't resolve — confirming null scores rather than a
+      silently wrong default.
+    model: int_tasks_locations_weather_forecast
+    given:
+      - input: ref('stg_tasks')
+        rows:
+          - {task_id: T_HIGH, location_id: LOC_1, posted_at: "2026-01-01 00:00:00", assigned_at: null, scheduled_at: "2026-01-01 10:00:00"}
+          - {task_id: T_MED, location_id: LOC_1, posted_at: "2026-01-01 00:00:00", assigned_at: null, scheduled_at: "2026-01-01 11:00:00"}
+          - {task_id: T_LOW, location_id: LOC_1, posted_at: "2026-01-01 00:00:00", assigned_at: null, scheduled_at: "2026-01-01 12:00:00"}
+          - {task_id: T_ORPHAN, location_id: LOC_MISSING, posted_at: "2026-01-01 00:00:00", assigned_at: null, scheduled_at: null}
+      - input: ref('stg_locations')
+        rows:
+          - {location_id: LOC_1, city: Testville, country: AU, timezone: "Australia/Sydney"}
+      - input: ref('stg_weather_forecast')
+        rows:
+          # HIGH: every factor past its threshold
+          - {location_id: LOC_1, time: "2026-01-01 10:00:00", temperature_2m: 5, precipitation: 15, windspeed_10m: 35, visibility_km: 0.5}
+          # MEDIUM: every factor in its middle band
+          - {location_id: LOC_1, time: "2026-01-01 11:00:00", temperature_2m: 11, precipitation: 5, windspeed_10m: 15, visibility_km: 5}
+          # LOW: every factor comfortably inside range
+          - {location_id: LOC_1, time: "2026-01-01 12:00:00", temperature_2m: 17, precipitation: 1, windspeed_10m: 5, visibility_km: 15}
+    expect:
+      rows:
+        - {task_id: T_HIGH, temp_score: 3, precip_score: 3, wind_score: 3, visibility_score: 3, label_rank: 3, hourly_score: 12}
+        - {task_id: T_MED, temp_score: 2, precip_score: 2, wind_score: 2, visibility_score: 2, label_rank: 2, hourly_score: 8}
+        - {task_id: T_LOW, temp_score: 1, precip_score: 1, wind_score: 1, visibility_score: 1, label_rank: 1, hourly_score: 4}
+        - {task_id: T_ORPHAN, temp_score: null, precip_score: null, wind_score: null, visibility_score: null, label_rank: null, hourly_score: null}
